@@ -3,10 +3,12 @@
 #    Copyright (C) 2012 Canonical Ltd.
 #    Copyright (C) 2012 Hewlett-Packard Development Company, L.P.
 #    Copyright (C) 2012 Yahoo! Inc.
+#    Copyright (C) 2014 Amazon.com, Inc. or its affiliates.
 #
 #    Author: Scott Moser <scott.moser@canonical.com>
 #    Author: Juerg Haefliger <juerg.haefliger@hp.com>
 #    Author: Joshua Harlow <harlowja@yahoo-inc.com>
+#    Author: Andrew Jorgensen <ajorgens@amazon.com>
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License version 3, as
@@ -30,6 +32,7 @@ from email.mime.text import MIMEText
 from cloudinit import handlers
 from cloudinit import log as logging
 from cloudinit import util
+from cloudinit.url_helper import UrlError
 
 LOG = logging.getLogger(__name__)
 
@@ -173,16 +176,23 @@ class UserDataProcessor(object):
             if include_once_on and os.path.isfile(include_once_fn):
                 content = util.load_file(include_once_fn)
             else:
-                resp = util.read_file_or_url(include_url,
-                                             ssl_details=self.ssl_details)
-                if include_once_on and resp.ok():
-                    util.write_file(include_once_fn, str(resp), mode=0600)
-                if resp.ok():
-                    content = str(resp)
-                else:
+                try:
+                    resp = util.read_file_or_url(include_url,
+                                                 ssl_details=self.ssl_details)
+
+                    if include_once_on and resp.ok():
+                        util.write_file(include_once_fn, str(resp), mode=0600)
+                    if resp.ok():
+                        content = str(resp)
+                    else:
+                        raise UrlError(None, resp.code)
+                except UrlError as urle:
                     LOG.warn(("Fetching from %s resulted in"
                               " a invalid http code of %s"),
-                             include_url, resp.code)
+                             include_url, urle.code)
+                except IOError as ioe:
+                    LOG.warn(("Fetching from %s resulted in an IOError: %s"),
+                             include_url, ioe.strerror)
 
             if content is not None:
                 new_msg = convert_string(content)
