@@ -3,10 +3,12 @@
 #    Copyright (C) 2012 Canonical Ltd.
 #    Copyright (C) 2012 Hewlett-Packard Development Company, L.P.
 #    Copyright (C) 2012 Yahoo! Inc.
+#    Copyright (C) 2014 Amazon.com, Inc. or its affiliates.
 #
 #    Author: Scott Moser <scott.moser@canonical.com>
 #    Author: Juerg Haefliger <juerg.haefliger@hp.com>
 #    Author: Joshua Harlow <harlowja@yahoo-inc.com>
+#    Author: Andrew Jorgensen <ajorgens@amazon.com>
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License version 3, as
@@ -21,6 +23,7 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import time
+import warnings
 
 import requests
 from requests import exceptions
@@ -37,7 +40,9 @@ SSL_ENABLED = False
 CONFIG_ENABLED = False  # This was added in 0.7 (but taken out in >=1.0)
 try:
     from distutils.version import LooseVersion
-    import pkg_resources
+    with warning.catch_warnings():
+        warnings.simplefilter("ignore", UserWarning)
+        import pkg_resources
     _REQ = pkg_resources.get_distribution('requests')
     _REQ_VER = LooseVersion(_REQ.version)  # pylint: disable=E1103
     if _REQ_VER >= LooseVersion('0.8.8'):
