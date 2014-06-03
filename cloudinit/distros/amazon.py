@@ -98,3 +98,7 @@ class Distro(rhel.Distro):
             # bugfix updates.
             pass
         return args
+
+    def _dist_uses_systemd(self):
+        # Amazon Linux AMI doesn't use systemd yet
+        return False
