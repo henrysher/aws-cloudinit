@@ -22,7 +22,7 @@
 
 import cloudinit.util as util
 
-from prettytable import PrettyTable
+from cloudinit.simpletable import SimpleTable as PrettyTable
 
 
 def netdev_info(empty=""):

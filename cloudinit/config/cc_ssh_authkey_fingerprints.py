@@ -19,7 +19,7 @@
 import base64
 import hashlib
 
-from prettytable import PrettyTable
+from cloudinit.simpletable import SimpleTable as PrettyTable
 
 # Ensure this is aliased to a name not 'distros'
 # since the module attribute 'distros'
