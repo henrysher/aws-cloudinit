@@ -2,9 +2,11 @@
 #
 #    Copyright (C) 2009-2010 Canonical Ltd.
 #    Copyright (C) 2012 Hewlett-Packard Development Company, L.P.
+#    Copyright (C) 2014 Amazon.com, Inc. or its affiliates.
 #
 #    Author: Scott Moser <scott.moser@canonical.com>
 #    Author: Juerg Haefliger <juerg.haefliger@hp.com>
+#    Author: Andrew Jorgensen <ajorgens@amazon.com>
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License version 3, as
@@ -87,8 +89,9 @@ def handle(name, cfg, cloud, log, _args):
         # it will also return failure on the attempt, so 'restarted'
         # won't get set.
         log.debug("Restarting rsyslog")
-        util.subp(['service', 'rsyslog', 'restart'])
-        restarted = True
+        if cloud.distro.service_running('rsyslog'):
+            cloud.distro.service_control('rsyslog', 'restart')
+            restarted = True
     except Exception:
         util.logexc(log, "Failed restarting rsyslog")
 

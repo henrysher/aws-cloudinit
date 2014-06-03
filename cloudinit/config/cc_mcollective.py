@@ -2,10 +2,12 @@
 #
 #    Copyright (C) 2009-2011 Canonical Ltd.
 #    Copyright (C) 2012 Hewlett-Packard Development Company, L.P.
+#    Copyright (C) 2014 Amazon.com, Inc. or its affiliates.
 #
 #    Author: Marc Cluet <marc.cluet@canonical.com>
 #    Based on code by Scott Moser <scott.moser@canonical.com>
 #    Author: Juerg Haefliger <juerg.haefliger@hp.com>
+#    Author: Andrew Jorgensen <ajorgens@amazon.com>
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License version 3, as
@@ -84,4 +86,4 @@ def handle(name, cfg, cloud, log, _args):
         util.write_file(SERVER_CFG, contents, mode=0644)
 
     # Start mcollective
-    util.subp(['service', 'mcollective', 'start'], capture=False)
+    cloud.distro.service_control('mcollective', 'start', capture=False)

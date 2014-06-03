@@ -1,6 +1,9 @@
 # vi: ts=4 expandtab
 #
+#    Copyright (C) 2014 Amazon.com, Inc. or its affiliates.
+#
 #    Author: Jeff Bauer <jbauer@rubic.com>
+#    Author: Andrew Jorgensen <ajorgens@amazon.com>
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License version 3, as
@@ -54,6 +57,9 @@ def handle(name, cfg, cloud, log, _args):
             util.write_file(pub_name, salt_cfg['public_key'])
             util.write_file(pem_name, salt_cfg['private_key'])
 
-    # restart salt-minion.  'service' will start even if not started.  if it
-    # was started, it needs to be restarted for config change.
-    util.subp(['service', 'salt-minion', 'restart'], capture=False)
+    # start / restart salt-minion. if it was started, it needs to be restarted
+    # for config change.
+    if cloud.distro.service_running('salt-minion'):
+        cloud.distro.service_control('salt-minion', 'restart', capture=False)
+    else:
+        cloud.distro.service_control('salt-minion', 'start', capture=False)

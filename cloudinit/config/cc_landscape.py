@@ -2,9 +2,11 @@
 #
 #    Copyright (C) 2011 Canonical Ltd.
 #    Copyright (C) 2012 Hewlett-Packard Development Company, L.P.
+#    Copyright (C) 2014 Amazon.com, Inc. or its affiliates.
 #
 #    Author: Scott Moser <scott.moser@canonical.com>
 #    Author: Juerg Haefliger <juerg.haefliger@hp.com>
+#    Author: Andrew Jorgensen <ajorgens@amazon.com>
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License version 3, as
@@ -80,7 +82,7 @@ def handle(_name, cfg, cloud, log, _args):
     log.debug("Wrote landscape config file to %s", LSC_CLIENT_CFG_FILE)
 
     util.write_file(LS_DEFAULT_FILE, "RUN=1\n")
-    util.subp(["service", "landscape-client", "restart"])
+    cloud.distro.service_control("landscape-client", "restart")
 
 
 def merge_together(objs):

@@ -60,6 +60,18 @@ class Distro(object):
         self._cfg = cfg
         self.name = name
 
+    def service_running(self, service):
+        """Tries to determine if a service is running or not."""
+        try:
+            self.service_control(service, 'status')
+            return True
+        except util.ProcessExecutionError:
+            return False
+
+    def service_control(self, service, command, **kwargs):
+        """Start, stop, restart, reload, etc., a service."""
+        return util.subp(['service', service, command], **kwargs)
+
     @abc.abstractmethod
     def install_packages(self, pkglist):
         raise NotImplementedError()

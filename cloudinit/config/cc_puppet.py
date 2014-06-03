@@ -2,9 +2,11 @@
 #
 #    Copyright (C) 2009-2010 Canonical Ltd.
 #    Copyright (C) 2012 Hewlett-Packard Development Company, L.P.
+#    Copyright (C) 2014 Amazon.com, Inc. or its affiliates.
 #
 #    Author: Scott Moser <scott.moser@canonical.com>
 #    Author: Juerg Haefliger <juerg.haefliger@hp.com>
+#    Author: Andrew Jorgensen <ajorgens@amazon.com>
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License version 3, as
@@ -114,5 +116,5 @@ def handle(name, cfg, cloud, log, _args):
     # Set it up so it autostarts
     _autostart_puppet(log)
 
-    # Start puppetd
-    util.subp(['service', 'puppetagent', 'start'], capture=False)
+    # Start puppetd (puppetagent?)
+    cloud.distro.service_control('puppet', 'start', capture=False)
