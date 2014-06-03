@@ -45,6 +45,9 @@ OSFAMILIES = {
 
 LOG = logging.getLogger(__name__)
 
+# This is a best guess regex, based on current EC2 AZs, it could break when
+# Amazon adds new regions and new AZs.
+_EC2_AZ_RE = re.compile("^[a-z][a-z]-.*-[1-9][0-9]*[a-z]$")
 
 class Distro(object):
     __metaclass__ = abc.ABCMeta
@@ -99,13 +102,13 @@ class Distro(object):
             arch = self.get_primary_arch()
         return _get_arch_package_mirror_info(mirror_info, arch)
 
-    def get_package_mirror_info(self, arch=None,
+    def get_package_mirror_info(self, arch=None, region=None,
                                 availability_zone=None):
         # This resolves the package_mirrors config option
         # down to a single dict of {mirror_name: mirror_url}
         arch_info = self._get_arch_package_mirror_info(arch)
         return _get_package_mirror_info(availability_zone=availability_zone,
-                                        mirror_info=arch_info)
+                                        region=region, mirror_info=arch_info)
 
     def apply_network(self, settings, bring_up=True):
         # Write it out
@@ -499,7 +502,7 @@ class Distro(object):
                 LOG.info("Added user '%s' to group '%s'" % (member, name))
 
 
-def _get_package_mirror_info(mirror_info, availability_zone=None,
+def _get_package_mirror_info(mirror_info, availability_zone=None, region=None,
                              mirror_filter=util.search_for_mirror):
     # given a arch specific 'mirror_info' entry (from package_mirrors)
     # search through the 'search' entries, and fallback appropriately
@@ -507,15 +510,15 @@ def _get_package_mirror_info(mirror_info, availability_zone=None,
     if not mirror_info:
         mirror_info = {}
 
-    ec2_az_re = ("^[a-z][a-z]-(%s)-[1-9][0-9]*[a-z]$" %
-        "north|northeast|east|southeast|south|southwest|west|northwest")
-
     subst = {}
     if availability_zone:
         subst['availability_zone'] = availability_zone
+        if not region and _EC2_AZ_RE.match(availability_zone):
+            region = availability_zone[:-1]
 
-    if availability_zone and re.match(ec2_az_re, availability_zone):
-        subst['ec2_region'] = "%s" % availability_zone[0:-1]
+    if region:
+        subst['region'] = region
+        subst['ec2_region'] = region
 
     results = {}
     for (name, mirror) in mirror_info.get('failsafe', {}).iteritems():

@@ -65,6 +65,8 @@ class DataSourceEc2(sources.DataSource):
                 self.metadata_address)
             self.metadata = ec2.get_instance_metadata(self.api_ver,
                                                       self.metadata_address)
+            self.identity = ec2.get_instance_identity(
+                self.api_ver, self.metadata_address)['document']
             LOG.debug("Crawl of metadata service took %s seconds",
                        int(time.time() - start_time))
             return True
@@ -80,7 +82,11 @@ class DataSourceEc2(sources.DataSource):
         return self.metadata.get('ami-launch-index')
 
     def get_instance_id(self):
-        return self.metadata['instance-id']
+        """Prefer the ID from the instance identity document, but fall back."""
+        instance_id = self.identity.get('instanceId')
+        if not instance_id:
+            instance_id = self.metadata.get('instance-id')
+        return instance_id
 
     def _get_url_settings(self):
         mcfg = self.ds_cfg
@@ -194,7 +200,22 @@ class DataSourceEc2(sources.DataSource):
     @property
     def availability_zone(self):
         try:
-            return self.metadata['placement']['availability-zone']
+            az = self.identity.get('availabilityZone')
+            if not az:
+                az = self.metadata['placement']['availability-zone']
+            return az
+        except KeyError:
+            return None
+
+    @property
+    def region(self):
+        try:
+            region = self.identity.get('region')
+            # There is no guarantee that the availability zone will be
+            # region + letter, but it is still a good fallback.
+            if not region:
+                region = self.availability_zone()[:-1]
+            return region
         except KeyError:
             return None
 

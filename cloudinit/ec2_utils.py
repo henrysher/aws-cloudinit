@@ -1,8 +1,10 @@
 # vi: ts=4 expandtab
 #
 #    Copyright (C) 2012 Yahoo! Inc.
+#    Copyright (C) 2014 Amazon.com, Inc. or its affiliates.
 #
 #    Author: Joshua Harlow <harlowja@yahoo-inc.com>
+#    Author: Andrew Jorgensen <ajorgens@amazon.com>
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License version 3, as
@@ -34,7 +36,7 @@ import boto.utils as boto_utils
 
 
 def _unlazy_dict(mp):
-    if not isinstance(mp, (dict)):
+    if not isinstance(mp, (dict,)):
         return mp
     # Walk over the keys/values which
     # forces boto to unlazy itself and
@@ -58,6 +60,13 @@ def get_instance_userdata(api_version, metadata_address):
 
 def get_instance_metadata(api_version, metadata_address):
     metadata = boto_utils.get_instance_metadata(api_version, metadata_address)
-    if not isinstance(metadata, (dict)):
+    if not isinstance(metadata, (dict,)):
         metadata = {}
     return _unlazy_dict(metadata)
+
+
+def get_instance_identity(api_version, metadata_address):
+    identity = boto_utils.get_instance_identity(api_version, metadata_address)
+    if not isinstance(identity, (dict,)):
+        identity = {}
+    return identity
