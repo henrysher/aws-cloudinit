@@ -66,7 +66,9 @@ class BootHookPartHandler(handlers.Handler):
             env = os.environ.copy()
             if self.instance_id is not None:
                 env['INSTANCE_ID'] = str(self.instance_id)
-            util.subp([filepath], env=env)
+            # Use shell=True so that if the user omits the #!, there is still
+            # some chance it will succeed.
+            util.subp([filepath], env=env, shell=True)
         except util.ProcessExecutionError:
             util.logexc(LOG, "Boothooks script %s execution error", filepath)
         except Exception:
