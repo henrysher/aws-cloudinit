@@ -1,8 +1,10 @@
 # vi: ts=4 expandtab
 #
 #    Copyright (C) 2012 Yahoo! Inc.
+#    Copyright (C) 2014 Amazon.com, Inc. or its affiliates.
 #
 #    Author: Joshua Harlow <harlowja@yahoo-inc.com>
+#    Author: Andrew Jorgensen <ajorgens@amazon.com>
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License version 3, as
@@ -50,11 +52,21 @@ def _fire_reboot(log, wait_attempts=6, initial_sleep=1, backoff=2):
 
 def handle(_name, cfg, cloud, log, _args):
     # Handle the old style + new config names
-    update = _multi_cfg_bool_get(cfg, 'apt_update', 'package_update')
+    update = _multi_cfg_bool_get(cfg, 'apt_update', 'package_update',
+                                 'repo_update')
     upgrade = _multi_cfg_bool_get(cfg, 'package_upgrade', 'apt_upgrade')
     reboot_if_required = _multi_cfg_bool_get(cfg, 'apt_reboot_if_required',
                                              'package_reboot_if_required')
     pkglist = util.get_cfg_option_list(cfg, 'packages', [])
+
+    # Amazon option that should also trigger an upgrade, but isn't bool
+    upgrade_level = util.get_cfg_option_str(cfg, 'repo_upgrade', upgrade)
+    if upgrade_level not in ('none', 'false', 'False'):
+        upgrade = True
+    else:
+        # condense none, false, and False to none
+        upgrade_level = 'none'
+    upgrade_exclude = util.get_cfg_option_list(cfg, 'repo_upgrade_exclude', [])
 
     errors = []
     if update or len(pkglist) or upgrade:
@@ -66,7 +78,7 @@ def handle(_name, cfg, cloud, log, _args):
 
     if upgrade:
         try:
-            cloud.distro.package_command("upgrade")
+            cloud.distro.upgrade_packages(upgrade_level, upgrade_exclude)
         except Exception as e:
             util.logexc(log, "Package upgrade failed")
             errors.append(e)
