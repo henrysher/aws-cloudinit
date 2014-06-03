@@ -45,7 +45,7 @@ INITSYS_FILES = {
 INITSYS_ROOTS = {
     'sysvinit': '/etc/rc.d/init.d',
     'sysvinit_deb': '/etc/init.d',
-    'systemd': '/etc/systemd/system/',
+    'systemd': '/usr/lib/systemd/system/',
     'upstart': '/etc/init/',
 }
 INITSYS_TYPES = sorted(list(INITSYS_ROOTS.keys()))
@@ -123,7 +123,7 @@ setuptools.setup(name='cloud-init',
                   ('/etc/cloud/cloud.cfg.d', glob('config/cloud.cfg.d/*')),
                   ('/etc/cloud/templates', glob('templates/*')),
                   ('/usr/share/cloud-init', []),
-                  ('/usr/lib/cloud-init',
+                  ('/usr/libexec/cloud-init',
                     ['tools/uncloud-init',
                      'tools/write-ssh-key-fingerprints']),
                   ('/usr/share/doc/cloud-init',

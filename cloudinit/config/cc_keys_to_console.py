@@ -26,7 +26,7 @@ from cloudinit import util
 frequency = PER_INSTANCE
 
 # This is a tool that cloud init provides
-HELPER_TOOL = '/usr/lib/cloud-init/write-ssh-key-fingerprints'
+HELPER_TOOL = '/usr/libexec/cloud-init/write-ssh-key-fingerprints'
 
 
 def handle(name, cfg, _cloud, log, _args):
