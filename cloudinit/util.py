@@ -3,10 +3,12 @@
 #    Copyright (C) 2012 Canonical Ltd.
 #    Copyright (C) 2012 Hewlett-Packard Development Company, L.P.
 #    Copyright (C) 2012 Yahoo! Inc.
+#    Copyright (C) 2014 Amazon.com, Inc. or its affiliates.
 #
 #    Author: Scott Moser <scott.moser@canonical.com>
 #    Author: Juerg Haefliger <juerg.haefliger@hp.com>
 #    Author: Joshua Harlow <harlowja@yahoo-inc.com>
+#    Author: Andrew Jorgensen <ajorgens@amazon.com>
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License version 3, as
@@ -24,6 +26,7 @@
 
 from StringIO import StringIO
 
+import base64
 import contextlib
 import copy as obj_copy
 import errno
@@ -34,6 +37,7 @@ import hashlib
 import os
 import platform
 import pwd
+import re
 import random
 import shutil
 import socket
@@ -70,6 +74,8 @@ FN_ALLOWED = ('_-.()' + string.digits + string.ascii_letters)
 # Helper utils to see if running in a container
 CONTAINER_TESTS = ['running-in-container', 'lxc-is-container']
 
+# An imperfect, but close enough regex to detect Base64 encoding
+BASE64 = re.compile('^[A-Za-z0-9+/\-_\n]+=?=?$')
 
 # Made to have same accessors as UrlResponse so that the
 # read_file_or_url can return this or that object and the
@@ -185,6 +191,10 @@ class SeLinuxGuard(object):
 
 
 class MountFailedError(Exception):
+    pass
+
+
+class DecodingError(Exception):
     pass
 
 
@@ -314,6 +324,21 @@ def clean_filename(fn):
         fn = fn.replace(k, '')
     fn = fn.strip()
     return fn
+
+
+def decode_base64(data, quiet=True):
+    try:
+        # Some builds of python don't throw an exception when the data is not
+        # proper Base64, so we check it first.
+        if BASE64.match(data):
+            return base64.urlsafe_b64decode(data)
+        else:
+            return data
+    except Exception as e:
+        if quiet:
+            return data
+        else:
+            raise DecodingError(str(e))
 
 
 def decomp_gzip(data, quiet=True):

@@ -272,7 +272,10 @@ def convert_string(raw_data, headers=None):
         raw_data = ''
     if not headers:
         headers = {}
-    data = util.decomp_gzip(raw_data)
+    # Some tools and users will base64 encode their data before handing it to
+    # an API like boto, which will base64 encode it again, so we try to decode.
+    data = util.decode_base64(raw_data)
+    data = util.decomp_gzip(data)
     if "mime-version:" in data[0:4096].lower():
         msg = email.message_from_string(data)
         for (key, val) in headers.iteritems():
