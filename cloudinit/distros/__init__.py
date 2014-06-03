@@ -40,7 +40,7 @@ from cloudinit.distros.parsers import hosts
 
 OSFAMILIES = {
     'debian': ['debian', 'ubuntu'],
-    'redhat': ['fedora', 'rhel']
+    'redhat': ['fedora', 'rhel', 'amazon']
 }
 
 LOG = logging.getLogger(__name__)
