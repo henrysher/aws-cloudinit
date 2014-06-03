@@ -115,11 +115,13 @@ class Distro(object):
         return _get_arch_package_mirror_info(mirror_info, arch)
 
     def get_package_mirror_info(self, arch=None, region=None,
-                                availability_zone=None):
+                                availability_zone=None,
+                                services_domain=None):
         # This resolves the package_mirrors config option
         # down to a single dict of {mirror_name: mirror_url}
         arch_info = self._get_arch_package_mirror_info(arch)
-        return _get_package_mirror_info(availability_zone=availability_zone,
+        return _get_package_mirror_info(services_domain=services_domain,
+                                        availability_zone=availability_zone,
                                         region=region, mirror_info=arch_info)
 
     def apply_network(self, settings, bring_up=True):
@@ -515,7 +517,8 @@ class Distro(object):
 
 
 def _get_package_mirror_info(mirror_info, availability_zone=None, region=None,
-                             mirror_filter=util.search_for_mirror):
+                             mirror_filter=util.search_for_mirror,
+                             services_domain=None):
     # given a arch specific 'mirror_info' entry (from package_mirrors)
     # search through the 'search' entries, and fallback appropriately
     # return a dict with only {name: mirror} entries.
@@ -531,6 +534,9 @@ def _get_package_mirror_info(mirror_info, availability_zone=None, region=None,
     if region:
         subst['region'] = region
         subst['ec2_region'] = region
+
+    if services_domain:
+        subst['services_domain'] = services_domain
 
     results = {}
     for (name, mirror) in mirror_info.get('failsafe', {}).iteritems():

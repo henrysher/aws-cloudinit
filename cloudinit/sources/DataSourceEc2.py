@@ -34,13 +34,14 @@ LOG = logging.getLogger(__name__)
 DEF_MD_URL = "http://169.254.169.254"
 
 # Which version we are requesting of the ec2 metadata apis
-DEF_MD_VERSION = '2009-04-04'
+DEF_MD_VERSION = 'latest'
 
 # Default metadata urls that will be used if none are provided
 # They will be checked for 'resolveability' and some of the
 # following may be discarded if they do not resolve
 DEF_MD_URLS = [DEF_MD_URL, "http://instance-data.:8773"]
 
+DEF_MD_SERVICES_DOMAIN = 'amazonaws.com'
 
 class DataSourceEc2(sources.DataSource):
     def __init__(self, sys_cfg, distro, paths):
@@ -218,6 +219,13 @@ class DataSourceEc2(sources.DataSource):
             return region
         except KeyError:
             return None
+
+    @property
+    def services_domain(self):
+        try:
+            return self.metadata['services']['domain']
+        except KeyError:
+            return DEF_MD_SERVICES_DOMAIN
 
 # Used to match classes to dependencies
 datasources = [
