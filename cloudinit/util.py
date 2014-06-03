@@ -1476,7 +1476,9 @@ def delete_dir_contents(dirname):
 
 
 def subp(args, data=None, rcs=None, env=None, capture=True, shell=False,
-         logstring=False):
+         close_stdin=False, pipe_cat=False, logstring=False):
+    if data and close_stdin:
+        raise ValueError('Incompatible parameters: data and close_stdin')
     if rcs is None:
         rcs = [0]
     try:
@@ -1495,10 +1497,25 @@ def subp(args, data=None, rcs=None, env=None, capture=True, shell=False,
             stdout = subprocess.PIPE
             stderr = subprocess.PIPE
         stdin = subprocess.PIPE
-        sp = subprocess.Popen(args, stdout=stdout,
-                        stderr=stderr, stdin=stdin,
-                        env=env, shell=shell)
-        (out, err) = sp.communicate(data)
+        # Some processes are less chatty when piped through cat, because they
+        # won't detect a terminal (yum being a prime example).
+        if pipe_cat:
+            cat = subprocess.Popen('cat', stdout=stdout, stderr=stderr,
+                                   stdin=subprocess.PIPE)
+            sp = subprocess.Popen(args, stdout=cat.stdin,
+                                  stderr=stderr, stdin=stdin,
+                                  env=env, shell=shell)
+            if close_stdin:
+                sp.stdin.close()
+            (_out, err) = sp.communicate(data)
+            (out, _err) = cat.communicate()
+        else:
+            sp = subprocess.Popen(args, stdout=stdout,
+                            stderr=stderr, stdin=stdin,
+                            env=env, shell=shell)
+            if close_stdin:
+                sp.stdin.close()
+            (out, err) = sp.communicate(data)
     except OSError as e:
         raise ProcessExecutionError(cmd=args, reason=e)
     rc = sp.returncode  # pylint: disable=E1101
