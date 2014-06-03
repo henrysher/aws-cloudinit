@@ -41,6 +41,7 @@ UPGRADE_BUGFIX    = 5
 UPGRADE_SECURITY  = UPGRADE_IMPORTANT
 
 class Distro(rhel.Distro):
+    ci_sudoers_fn = "/etc/sudoers.d/cloud-init"
 
     def upgrade_packages(self, level='none', exclude=[]):
         LOG.debug('Upgrade level: %s', level)
