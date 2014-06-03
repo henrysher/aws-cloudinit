@@ -1,8 +1,10 @@
 # vi: ts=4 expandtab
 #
 #    Copyright (C) 2012 Yahoo! Inc.
+#    Copyright (C) 2014 Amazon.com, Inc. or its affiliates.
 #
 #    Author: Joshua Harlow <harlowja@yahoo-inc.com>
+#    Author: Andrew Jorgensen <ajorgens@amazon.com>
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License version 3, as
@@ -49,6 +51,12 @@ def _migrate_legacy_sems(cloud, log):
     legacy_adjust = {
         'apt-update-upgrade': [
             'apt-configure',
+            'package-update-upgrade-install',
+        ],
+        'genrepo': [
+            'yum-configure',
+        ],
+        'package-setup': [
             'package-update-upgrade-install',
         ],
     }

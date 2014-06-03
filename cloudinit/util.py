@@ -993,7 +993,8 @@ def search_for_mirror(candidates):
     """
     for cand in candidates:
         try:
-            if is_resolvable_url(cand):
+            # Allow either a proper URL or a bare hostname / IP
+            if is_resolvable_url(cand) or is_resolvable(cand):
                 return cand
         except Exception:
             pass
